@@ -1,4 +1,4 @@
-Mettre en place un LAN segmenté par VLAN avec :
+# Mettre en place un LAN segmenté par VLAN
 
 - Un routeur central (R) faisant l’inter-VLAN routing et serveur DHCP.
 - Trois switches d’accès (S1, S2, S3).
@@ -98,3 +98,5 @@ Placement des ACL (inbound sur le routeur R):
 Remarque DHCP :
 
 - Le serveur DHCP étant sur R, prévoir l’autorisation du trafic DHCP client → serveur (UDP 68 → 67) dans USERS_IN et ADMIN_IN si l’ACL bloque les paquets destinés au routeur.
+
+![](../project/project.png)
