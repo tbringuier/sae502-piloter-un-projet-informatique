@@ -1,0 +1,52 @@
+%%{init: {'theme':'base', 'themeVariables': { 'fontSize':'14px'}}}%%
+graph TB
+    %% Définition du routeur central
+    R["<b>ROUTEUR R</b><br/>━━━━━━━━━━━━━━━<br/>Router-on-a-Stick<br/>Interface G0/0 (Trunk 802.1Q)<br/><br/><b>Subinterfaces:</b><br/>• G0/0.10 - VLAN 10<br/>  IP: 192.168.10.1/24<br/>  ACL: USERS_IN (inbound)<br/><br/>• G0/0.20 - VLAN 20<br/>  IP: 192.168.20.1/24<br/>  ACL: SERVERS_IN (inbound)<br/><br/>• G0/0.30 - VLAN 30<br/>  IP: 192.168.30.1/24<br/>  ACL: ADMIN_IN (inbound)<br/><br/><b>Services:</b><br/>• Serveur DHCP<br/>  - VLAN 10: .10-.250<br/>  - VLAN 20: .10-.250<br/>  - VLAN 30: .20-.250<br/>  - Bail: 7 jours<br/>  - Domaine: local.lan"]
+    
+    %% Définition des switches
+    S1["<b>SWITCH S1</b><br/>━━━━━━━━━━━━<br/>Management VLAN 30<br/>IP: 192.168.30.11/24<br/>GW: 192.168.30.1<br/><br/><b>Ports:</b><br/>• Trunk vers R (802.1Q)<br/>  VLANs: 10, 20, 30<br/>• Trunk vers S2 (802.1Q)<br/>  VLANs: 10, 20, 30<br/>• Access VLAN 10 → m1<br/>• Access VLAN 20 → m3"]
+    
+    S2["<b>SWITCH S2</b><br/>━━━━━━━━━━━━<br/>Management VLAN 30<br/>IP: 192.168.30.12/24<br/>GW: 192.168.30.1<br/><br/><b>Ports:</b><br/>• Trunk vers S1 (802.1Q)<br/>  VLANs: 10, 20, 30<br/>• Trunk vers S3 (802.1Q)<br/>  VLANs: 10, 20, 30<br/>• Access VLAN 10 → m2<br/>• Access VLAN 20 → m4"]
+    
+    S3["<b>SWITCH S3</b><br/>━━━━━━━━━━━━<br/>Management VLAN 30<br/>IP: 192.168.30.13/24<br/>GW: 192.168.30.1<br/><br/><b>Ports:</b><br/>• Trunk vers S2 (802.1Q)<br/>  VLANs: 10, 20, 30<br/>• Access VLAN 30 → m5<br/>• Access VLAN 30 → m6"]
+    
+    %% Définition des hôtes VLAN 10 (Utilisateurs)
+    M1["<b>m1-user</b><br/>━━━━━━━━<br/>VLAN 10<br/>IP: DHCP<br/>Réseau: 192.168.10.0/24<br/>GW: 192.168.10.1<br/><br/><b>Accès autorisé:</b><br/>✓ ICMP vers VLAN 20<br/>✓ HTTP (TCP/80) vers VLAN 20<br/>✗ Autres flux vers VLAN 20<br/>✗ Accès vers VLAN 30"]
+    
+    M2["<b>m2-user</b><br/>━━━━━━━━<br/>VLAN 10<br/>IP: DHCP<br/>Réseau: 192.168.10.0/24<br/>GW: 192.168.10.1<br/><br/><b>Accès autorisé:</b><br/>✓ ICMP vers VLAN 20<br/>✓ HTTP (TCP/80) vers VLAN 20<br/>✗ Autres flux vers VLAN 20<br/>✗ Accès vers VLAN 30"]
+    
+    %% Définition des hôtes VLAN 20 (Serveurs)
+    M3["<b>m3-serverhttp</b><br/>━━━━━━━━━━━━<br/>VLAN 20<br/>IP: 192.168.20.10/24 (statique)<br/>GW: 192.168.20.1<br/><br/><b>Services:</b><br/>• Serveur HTTP (TCP/80)<br/><br/><b>Restrictions:</b><br/>✗ Initiation flux vers VLAN 10<br/>✓ Réponses TCP established<br/>✓ ICMP echo-reply vers VLAN 10<br/>✓ Trafic vers VLAN 30"]
+    
+    M4["<b>m4-serverhttp</b><br/>━━━━━━━━━━━━<br/>VLAN 20<br/>IP: 192.168.20.11/24 (statique)<br/>GW: 192.168.20.1<br/><br/><b>Services:</b><br/>• Serveur HTTP (TCP/80)<br/><br/><b>Restrictions:</b><br/>✗ Initiation flux vers VLAN 10<br/>✓ Réponses TCP established<br/>✓ ICMP echo-reply vers VLAN 10<br/>✓ Trafic vers VLAN 30"]
+    
+    %% Définition des hôtes VLAN 30 (Administration)
+    M5["<b>m5-admin</b><br/>━━━━━━━━━<br/>VLAN 30<br/>IP: DHCP<br/>Réseau: 192.168.30.0/24<br/>GW: 192.168.30.1<br/><br/><b>Privilèges:</b><br/>✓ Accès complet tous VLANs<br/>✓ Gestion switches<br/>✓ Gestion serveurs"]
+    
+    M6["<b>m6-admin</b><br/>━━━━━━━━━<br/>VLAN 30<br/>IP: DHCP<br/>Réseau: 192.168.30.0/24<br/>GW: 192.168.30.1<br/><br/><b>Privilèges:</b><br/>✓ Accès complet tous VLANs<br/>✓ Gestion switches<br/>✓ Gestion serveurs"]
+    
+    %% Connexions physiques et logiques
+    R ==>|"<b>TRUNK 802.1Q</b><br/>Port: G0/0<br/>VLANs: 10, 20, 30"| S1
+    S1 ==>|"<b>TRUNK 802.1Q</b><br/>VLANs: 10, 20, 30"| S2
+    S2 ==>|"<b>TRUNK 802.1Q</b><br/>VLANs: 10, 20, 30"| S3
+    
+    %% Connexions des hôtes
+    S1 -.->|"<b>ACCESS</b><br/>VLAN 10"| M1
+    S1 -.->|"<b>ACCESS</b><br/>VLAN 20"| M3
+    S2 -.->|"<b>ACCESS</b><br/>VLAN 10"| M2
+    S2 -.->|"<b>ACCESS</b><br/>VLAN 20"| M4
+    S3 -.->|"<b>ACCESS</b><br/>VLAN 30"| M5
+    S3 -.->|"<b>ACCESS</b><br/>VLAN 30"| M6
+    
+    %% Styles
+    classDef routerStyle fill:#ff6b6b,stroke:#c92a2a,stroke-width:3px,color:#fff
+    classDef switchStyle fill:#4dabf7,stroke:#1971c2,stroke-width:2px,color:#fff
+    classDef vlan10Style fill:#51cf66,stroke:#2f9e44,stroke-width:2px,color:#000
+    classDef vlan20Style fill:#ffd43b,stroke:#fab005,stroke-width:2px,color:#000
+    classDef vlan30Style fill:#ff8787,stroke:#fa5252,stroke-width:2px,color:#000
+    
+    class R routerStyle
+    class S1,S2,S3 switchStyle
+    class M1,M2 vlan10Style
+    class M3,M4 vlan20Style
+    class M5,M6 vlan30Style
